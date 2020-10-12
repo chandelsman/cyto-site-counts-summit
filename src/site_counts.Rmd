@@ -1,0 +1,124 @@
+---
+title: ""
+output: html_document
+params:
+  year:
+    label: Year
+    value: 2020
+    input: select
+    choices:
+    - 2020
+    - 2021
+    - 2022
+    - 2023
+    - 2024
+    - 2025
+  quarter:
+    label: Quarter
+    value: Quarter 1
+    input: select
+    choices:
+    - Quarter 1
+    - Quarter 2
+    - Quarter 3
+    - Quarter 4
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_knit$set(root.dir = normalizePath(".."))
+```
+
+
+```{r load-libraries, include = FALSE, messages=FALSE, warning=FALSE}
+# library(readxl)
+library(tidyverse)
+library(gt)
+```
+
+
+<center>
+
+![](sp-logo.png){width=30%}
+
+# Cytology Site Counts by Diagnosis
+
+## `r params$year` `r params$quarter`
+
+</center>
+
+
+```{r load data, message=FALSE}
+# site_counts <- read_excel("./data/site_counts_2020_Q2.xlsx")
+site_counts <- read_csv("./data/site_counts_2020_Q3.csv")
+```
+
+
+```{r reclassify-sites, message = FALSE, warning = FALSE}
+
+site_id <- site_counts %>%
+  mutate(
+    NAME = case_when(
+      NAME == "PLEURAL CAVITY" ~ "Pleural Fluid",
+      NAME == "BREAST NIPPLE DISCHARGE" ~ "Breast",
+      NAME == "URINE" ~ "Urinary Tract",
+      NAME == "GU" ~ "Urinary Tract",
+      NAME == "PAROTID GLAND" ~ "Salivary Glands",
+      NAME == "PERITONEAL CAVITY" ~ "Peritoneal Fluid",
+      NAME == "GI" ~ "Gastrointestinal Tract",
+      TRUE ~ NAME
+    ),
+    NAME = str_to_title(NAME),
+  )
+```
+
+
+```{r summarize-data, message = FALSE, warning = FALSE}
+
+site_summary <- site_id %>% 
+  group_by(NAME) %>% 
+  summarize(
+    Total = sum(TOTAL),
+    Normal = sum(NORMAL),
+    `Normal Avg` = Normal / sum(TOTAL),
+    Malignant = sum(MALIGNANT),
+    `Malignant Avg` = Malignant / sum(TOTAL),
+    Atypical = sum(ATYPICAL),
+    `Atypical Ave` = Atypical / sum(TOTAL),
+    Benign = sum(BENIGN),
+    `Benign Avg` = Benign / sum(TOTAL),
+    `Non-diagnostic` = sum(NON_DIAGNOSTIC),
+    `Non-diagnostic Avg` = `Non-diagnostic` / sum(TOTAL)
+  )
+```
+
+
+```{r summary-table, message = FALSE, warning = FALSE}
+
+site_summary %>%
+  gt(rowname_col = "NAME", auto_align = TRUE) %>%
+  tab_header(title = "",
+             subtitle = "") %>%
+  fmt_number(
+    columns =
+      vars(Total, Normal, Malignant, Atypical,
+           Benign, `Non-diagnostic`),
+    decimals = 0,
+    use_seps = TRUE
+  ) %>%
+  fmt_percent(
+    columns =
+      vars(
+        `Normal Avg`,
+        `Malignant Avg`,
+        `Atypical Ave`,
+        `Benign Avg`,
+        `Non-diagnostic Avg`
+      ),
+    decimals = 1,
+    use_seps = TRUE
+  ) %>%
+  tab_options(column_labels.font.weight = "bold",
+              table.font.size = 10,
+              table.width = pct(100))
+```

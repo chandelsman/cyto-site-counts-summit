@@ -1,0 +1,115 @@
+USE LIGOLAB_37_SUMMIT
+SELECT
+    EH.NAME,
+    COUNT(MTRR.MICROSCOPIC_SITE_RECORD_ID) AS TOTAL,
+    SUM(
+        CASE
+            WHEN MTRR.MICROSCOPIC_DIAGNOSIS_GRADE_ID = 31 THEN 1
+            ELSE 0
+        END
+    ) AS NORMAL,
+    CASE
+        WHEN COUNT(MTRR.MICROSCOPIC_SITE_RECORD_ID) = 0 THEN 0.00
+        ELSE CAST(
+            CAST(
+                SUM(
+                    CASE
+                        WHEN MTRR.MICROSCOPIC_DIAGNOSIS_GRADE_ID = 31 THEN 1
+                        ELSE 0
+                    END
+                ) AS FLOAT
+            ) / CAST(COUNT(MTRR.MICROSCOPIC_SITE_RECORD_ID) AS FLOAT) * 100 AS DECIMAL(5, 2)
+        )
+    END AS NORMAL_AVG,
+    SUM(
+        CASE
+            WHEN MTRR.MICROSCOPIC_DIAGNOSIS_GRADE_ID = 32 THEN 1
+            ELSE 0
+        END
+    ) AS MALIGNANT,
+    CASE
+        WHEN COUNT(MTRR.MICROSCOPIC_SITE_RECORD_ID) = 0 THEN 0.00
+        ELSE CAST(
+            CAST(
+                SUM(
+                    CASE
+                        WHEN MTRR.MICROSCOPIC_DIAGNOSIS_GRADE_ID = 32 THEN 1
+                        ELSE 0
+                    END
+                ) AS FLOAT
+            ) / CAST(COUNT(MTRR.MICROSCOPIC_SITE_RECORD_ID) AS FLOAT) * 100.0 AS DECIMAL(5, 2)
+        )
+    END AS MALIGNANT_AVG,
+    SUM(
+        CASE
+            WHEN MTRR.MICROSCOPIC_DIAGNOSIS_GRADE_ID = 34 THEN 1
+            ELSE 0
+        END
+    ) AS ATYPICAL,
+    CASE
+        WHEN COUNT(MTRR.MICROSCOPIC_SITE_RECORD_ID) = 0 THEN 0.00
+        ELSE CAST(
+            CAST(
+                SUM(
+                    CASE
+                        WHEN MTRR.MICROSCOPIC_DIAGNOSIS_GRADE_ID = 34 THEN 1
+                        ELSE 0
+                    END
+                ) AS FLOAT
+            ) / CAST(COUNT(MTRR.MICROSCOPIC_SITE_RECORD_ID) AS FLOAT) * 100.0 AS DECIMAL(5, 2)
+        )
+    END AS ATYPICAL_AVG,
+    SUM(
+        CASE
+            WHEN MTRR.MICROSCOPIC_DIAGNOSIS_GRADE_ID = 35 THEN 1
+            ELSE 0
+        END
+    ) AS BENIGN,
+    CASE
+        WHEN COUNT(MTRR.MICROSCOPIC_SITE_RECORD_ID) = 0 THEN 0.00
+        ELSE CAST(
+            CAST(
+                SUM(
+                    CASE
+                        WHEN MTRR.MICROSCOPIC_DIAGNOSIS_GRADE_ID = 35 THEN 1
+                        ELSE 0
+                    END
+                ) AS FLOAT
+            ) / CAST(COUNT(MTRR.MICROSCOPIC_SITE_RECORD_ID) AS FLOAT) * 100.0 AS DECIMAL(5, 2)
+        )
+    END AS BENIGN_AVG,
+    SUM(
+        CASE
+            WHEN MTRR.MICROSCOPIC_DIAGNOSIS_GRADE_ID = 36 THEN 1
+            ELSE 0
+        END
+    ) AS NON_DIAGNOSTIC,
+    CASE
+        WHEN COUNT(MTRR.MICROSCOPIC_SITE_RECORD_ID) = 0 THEN 0.00
+        ELSE CAST(
+            CAST(
+                SUM(
+                    CASE
+                        WHEN MTRR.MICROSCOPIC_DIAGNOSIS_GRADE_ID = 36 THEN 1
+                        ELSE 0
+                    END
+                ) AS FLOAT
+            ) / CAST(COUNT(MTRR.MICROSCOPIC_SITE_RECORD_ID) AS FLOAT) * 100.0 AS DECIMAL(5, 2)
+        )
+    END AS NON_DIAGNOSTIC_AVG
+FROM
+    LAB_ORDER_TEST_RESULT LTR
+    INNER JOIN RESULT_MICROSCOPIC MTR ON MTR.LAB_ORDER_TEST_RESULT_ID = LTR.LAB_ORDER_TEST_RESULT_ID
+    INNER JOIN RESULT_MICROSCOPIC_SITE_RECORD MTRR ON MTRR.LAB_ORDER_TEST_RESULT_ID = MTR.LAB_ORDER_TEST_RESULT_ID
+    INNER JOIN RESULT_MICROSCOPIC_ELEMENT_HOLDER EH ON EH.MICROSCOPIC_ELEMENT_HOLDER_ID = MTRR.MICROSCOPIC_SITE_ID
+    INNER JOIN LAB_ORDER_REPORT LOR ON LOR.LAB_ORDER_REPORT_ID = LTR.LAB_ORDER_REPORT_ID
+WHERE
+    MTR.CASE_TYPE_ID = 11 --NGYN
+    AND	LTR.CREATED_TIMESTAMP BETWEEN '2020-04-01 00:00:00.001' AND '2020-06-30 23:59:59.999'
+    AND NOT LAB_TEST_SEQUENCE_GROUP_ID IN(41, 42, 43, 69, 83) -- exludes Memorial facilities
+	AND LOR.RELEASED_TIME BETWEEN '2020-01-01 00:00:00.001' AND SYSDATETIME()
+GROUP BY
+    EH.NAME
+ORDER BY
+	NAME;
+GO
