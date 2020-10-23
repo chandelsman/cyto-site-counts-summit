@@ -49,54 +49,80 @@ library(gt)
 
 
 ```{r load data, message=FALSE}
-# site_counts <- read_excel("./data/site_counts_2020_Q2.xlsx")
-site_counts <- read_csv("./data/site_counts_2020_Q3.csv")
+# import data
+sites_raw <- read_csv("./data/site_counts_2020_Q1.csv")
+
+# Remove undersores & convert variable names to title case
+names(sites_raw) <- str_replace(names(sites_raw), "_", " ")
+names(sites_raw) <- str_to_title(names(sites_raw))
 ```
 
 
 ```{r reclassify-sites, message = FALSE, warning = FALSE}
-
-site_id <- site_counts %>%
+# Reclassify site names
+sites_clean <- 
+  sites_raw %>%
   mutate(
-    NAME = case_when(
-      NAME == "PLEURAL CAVITY" ~ "Pleural Fluid",
-      NAME == "BREAST NIPPLE DISCHARGE" ~ "Breast",
-      NAME == "URINE" ~ "Urinary Tract",
-      NAME == "GU" ~ "Urinary Tract",
-      NAME == "PAROTID GLAND" ~ "Salivary Glands",
-      NAME == "PERITONEAL CAVITY" ~ "Peritoneal Fluid",
-      NAME == "GI" ~ "Gastrointestinal Tract",
-      TRUE ~ NAME
+    Name = case_when(
+      Name == "PLEURAL CAVITY" ~ "Pleural Fluid",
+      Name == "BREAST NIPPLE DISCHARGE" ~ "Breast",
+      Name == "URINE" ~ "Urinary Tract",
+      Name == "GU" ~ "Urinary Tract",
+      Name == "PAROTID GLAND" ~ "Salivary Glands",
+      Name == "PERITONEAL CAVITY" ~ "Peritoneal Fluid",
+      Name == "GI" ~ "Gastrointestinal Tract",
+      TRUE ~ Name
     ),
-    NAME = str_to_title(NAME),
-  )
+    Name = str_to_title(Name),
+    Name = str_replace(Name, "And", "&")
+  ) %>% 
+  relocate(Total, .after = last_col())
 ```
 
 
 ```{r summarize-data, message = FALSE, warning = FALSE}
-
-site_summary <- site_id %>% 
-  group_by(NAME) %>% 
+# Summarize data
+site_counts <- 
+  sites_clean %>% 
+  group_by(Name) %>% 
   summarize(
-    Total = sum(TOTAL),
-    Normal = sum(NORMAL),
-    `Normal Avg` = Normal / sum(TOTAL),
-    Malignant = sum(MALIGNANT),
-    `Malignant Avg` = Malignant / sum(TOTAL),
-    Atypical = sum(ATYPICAL),
-    `Atypical Ave` = Atypical / sum(TOTAL),
-    Benign = sum(BENIGN),
-    `Benign Avg` = Benign / sum(TOTAL),
-    `Non-diagnostic` = sum(NON_DIAGNOSTIC),
-    `Non-diagnostic Avg` = `Non-diagnostic` / sum(TOTAL)
+    Normal = sum(Normal),
+    `Normal Avg` = Normal / sum(Total),
+    Malignant = sum(Malignant),
+    `Malignant Avg` = Malignant / sum(Total),
+    Atypical = sum(Atypical),
+    `Atypical Avg` = Atypical / sum(Total),
+    Benign = sum(Benign),
+    `Benign Avg` = Benign / sum(Total),
+    `Non-diagnostic` = sum(`Non Diagnostic`),
+    `Non-diagnostic Avg` = `Non-diagnostic` / sum(Total),
+    Total = sum(Total)
   )
+
+# Make total row
+site_summary <- tibble(
+  Name = "Total",
+  Normal = sum(site_counts$Normal),
+  `Normal Avg` = Normal / sum(site_counts$Total),
+  Malignant = sum(site_counts$Malignant),
+  `Malignant Avg` = Malignant / sum(site_counts$Total),
+  Atypical = sum(site_counts$Atypical),
+  `Atypical Avg` = Atypical / sum(site_counts$Total),
+  Benign = sum(site_counts$Benign),
+  `Benign Avg` = Benign / sum(site_counts$Total),
+  `Non-diagnostic` = sum(site_counts$`Non-diagnostic`),
+  `Non-diagnostic Avg` = `Non-diagnostic` / sum(site_counts$Total),
+  Total = sum(site_counts$Total)
+)
 ```
 
 
 ```{r summary-table, message = FALSE, warning = FALSE}
-
-site_summary %>%
-  gt(rowname_col = "NAME", auto_align = TRUE) %>%
+# make table
+site_counts %>%
+  bind_rows(site_summary) %>% 
+  rename(Site = Name) %>% 
+  gt() %>%
   tab_header(title = "",
              subtitle = "") %>%
   fmt_number(
@@ -111,14 +137,21 @@ site_summary %>%
       vars(
         `Normal Avg`,
         `Malignant Avg`,
-        `Atypical Ave`,
+        `Atypical Avg`,
         `Benign Avg`,
         `Non-diagnostic Avg`
       ),
-    decimals = 1,
+    decimals = 2,
     use_seps = TRUE
   ) %>%
   tab_options(column_labels.font.weight = "bold",
               table.font.size = 10,
-              table.width = pct(100))
+              table.width = pct(100)) %>% 
+  tab_style(
+    style = list(
+      cell_text(weight = "bold")
+    ),
+    locations = cells_body(
+      rows = Site == "Total")
+  )
 ```
