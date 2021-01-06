@@ -15,13 +15,17 @@ params:
     - 2025
   quarter:
     label: Quarter
-    value: Quarter 1
+    value: 1
     input: select
     choices:
-    - Quarter 1
-    - Quarter 2
-    - Quarter 3
-    - Quarter 4
+    - 1
+    - 2
+    - 3
+    - 4
+  data:
+    label: Input dataset
+    value: site_counts_2020_Q1.csv
+    input: file
 ---
 
 ```{r setup, include=FALSE}
@@ -43,14 +47,14 @@ library(gt)
 
 # Cytology Site Counts by Diagnosis
 
-## `r params$year` `r params$quarter`
+## `r params$year` Quarter `r params$quarter`
 
 </center>
 
 
 ```{r load data, message=FALSE}
 # import data
-sites_raw <- read_csv("./data/site_counts_2020_Q1.csv")
+sites_raw <- read_csv(params$data)
 
 # Remove undersores & convert variable names to title case
 names(sites_raw) <- str_replace(names(sites_raw), "_", " ")
