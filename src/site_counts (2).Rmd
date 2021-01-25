@@ -13,14 +13,18 @@ params:
     - 2023
     - 2024
     - 2025
-  report_type:
-    label: "Reporting Period"
-    value: "Quarter 1"
+  quarter:
+    label: Quarter
+    value: 1
     input: select
-    choices: ["Quarter 1", "Quarter 2", "Quarter 3", "Quarter 4", "Annual"]
+    choices:
+    - 1
+    - 2
+    - 3
+    - 4
   data:
-    label: "Input dataset:"
-    value: data/site_counts_2020_Q1.csv
+    label: Input dataset
+    value: site_counts_2020_Q1.csv
     input: file
 ---
 
@@ -43,7 +47,7 @@ library(gt)
 
 # Cytology Site Counts by Diagnosis
 
-## `r params$year` `r params$report_type` Report  
+## `r params$year` Quarter `r params$quarter`
 
 </center>
 
