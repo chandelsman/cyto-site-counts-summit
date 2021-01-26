@@ -18,6 +18,9 @@ params:
     value: "Quarter 1"
     input: select
     choices: ["Quarter 1", "Quarter 2", "Quarter 3", "Quarter 4", "Annual"]
+  author:
+    label: "Prepared by:"
+    value: Corey Handelsman
   data:
     label: "Input dataset:"
     value: data/site_counts_2020_Q1.csv
@@ -155,3 +158,19 @@ site_counts %>%
       rows = Site == "Total")
   )
 ```
+
+<br><br><br><br><br>
+<div style = "text-align: left">
+
+*Prepared by `r params$author` on `r format(as.Date(Sys.Date()), "%m/%d/%Y")`*
+
+<br><br>
+
+**Cytology Director :**________________________________ [**Date:** ________________]{style="float:right"}
+
+<br><br>
+
+**Medical Director :**_________________________________ [**Date:** ________________]{style="float:right"}
+
+</div>
+</div>
