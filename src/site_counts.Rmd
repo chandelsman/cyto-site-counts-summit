@@ -4,7 +4,7 @@ output: html_document
 params:
   year:
     label: Year
-    value: 2020
+    value: 2021
     input: select
     choices:
     - 2020
@@ -159,12 +159,8 @@ site_counts %>%
   )
 ```
 
-<br><br><br><br><br>
+<br><br><br>
 <div style = "text-align: left">
-
-*Prepared by `r params$author` on `r format(as.Date(Sys.Date()), "%m/%d/%Y")`*
-
-<br><br>
 
 **Cytology Director :**________________________________ [**Date:** ________________]{style="float:right"}
 
@@ -172,5 +168,7 @@ site_counts %>%
 
 **Medical Director :**_________________________________ [**Date:** ________________]{style="float:right"}
 
+<br><br>
+*Prepared by `r params$author` on `r format(as.Date(Sys.Date()), "%m/%d/%Y")`*
 </div>
 </div>
