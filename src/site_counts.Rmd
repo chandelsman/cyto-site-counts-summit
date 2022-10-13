@@ -4,7 +4,7 @@ output: html_document
 params:
   year:
     label: Year
-    value: 2021
+    value: !r lubridate::year(Sys.Date())
     input: select
     choices:
     - 2020
@@ -15,7 +15,7 @@ params:
     - 2025
   report_type:
     label: "Reporting Period"
-    value: "Quarter 1"
+    value: "Quarter 3"
     input: select
     choices: ["Quarter 1", "Quarter 2", "Quarter 3", "Quarter 4", "Annual"]
   author:
@@ -23,7 +23,7 @@ params:
     value: Corey Handelsman
   data:
     label: "Input dataset:"
-    value: data/site_counts_2020_Q1.csv
+    value: data/site_counts_2022_Q3.csv
     input: file
 ---
 
@@ -61,7 +61,7 @@ names(sites_raw) <- str_to_title(names(sites_raw))
 ```
 
 
-```{r reclassify-sites, message = FALSE, warning = FALSE}
+```{r reclassify-sites, message = FALSE, warning = TRUE}
 # Reclassify site names
 sites_clean <- 
   sites_raw %>%
@@ -83,7 +83,7 @@ sites_clean <-
 ```
 
 
-```{r summarize-data, message = FALSE, warning = FALSE}
+```{r summarize-data, message = FALSE, warning = TRUE}
 # Summarize data
 site_counts <- 
   sites_clean %>% 
@@ -120,7 +120,7 @@ site_summary <- tibble(
 ```
 
 
-```{r summary-table, message = FALSE, warning = FALSE}
+```{r summary-table, message = FALSE, warning = TRUE}
 # make table
 site_counts %>%
   bind_rows(site_summary) %>% 
@@ -130,14 +130,14 @@ site_counts %>%
              subtitle = "") %>%
   fmt_number(
     columns =
-      vars(Total, Normal, Malignant, Atypical,
+      c(Total, Normal, Malignant, Atypical,
            Benign, `Non-diagnostic`),
     decimals = 0,
     use_seps = TRUE
   ) %>%
   fmt_percent(
     columns =
-      vars(
+      c(
         `Normal Avg`,
         `Malignant Avg`,
         `Atypical Avg`,
